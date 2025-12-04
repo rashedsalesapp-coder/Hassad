@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Wallet, TrendingDown, History, Phone, Mail, CreditCard, FileText, Banknote } from 'lucide-react';
@@ -197,10 +197,10 @@ export function InvestorDetails() {
                                     </td>
                                     <td className="px-6 py-4 text-sm">
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${tx.type === 'BUY'
-                                                ? 'bg-emerald-100 text-emerald-700'
-                                                : tx.type === 'SELL'
-                                                    ? 'bg-red-100 text-red-700'
-                                                    : 'bg-blue-100 text-blue-700'
+                                            ? 'bg-emerald-100 text-emerald-700'
+                                            : tx.type === 'SELL'
+                                                ? 'bg-red-100 text-red-700'
+                                                : 'bg-blue-100 text-blue-700'
                                             }`}>
                                             {tx.type === 'BUY' ? 'شراء (إيداع)' : tx.type === 'SELL' ? 'بيع (تسييل)' : 'توزيع أرباح'}
                                         </span>

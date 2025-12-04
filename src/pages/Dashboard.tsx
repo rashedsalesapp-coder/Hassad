@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Users, Coins, TrendingUp, Edit2, Check, X, Banknote, ArrowUpRight } from 'lucide-react';
 import { getInvestors, getCurrentUnitPrice, updateUnitPrice, getAllPayouts, getTotalCapitalReturned } from '../lib/api';

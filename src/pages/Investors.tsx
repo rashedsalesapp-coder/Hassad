@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, User, Phone, Mail, CreditCard } from 'lucide-react';
 import { getInvestors, createInvestor } from '../lib/api';
