@@ -1,144 +1,149 @@
+import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getCurrentUnitPrice, updateUnitPrice, getInvestors } from '../lib/api';
-import { useState } from 'react';
-import { DollarSign, Users, TrendingUp } from 'lucide-react';
+import { Users, Coins, TrendingUp, Edit2, Check, X, Banknote, ArrowUpRight } from 'lucide-react';
+import { getInvestors, getCurrentUnitPrice, updateUnitPrice, getAllPayouts, getTotalCapitalReturned } from '../lib/api';
 
 export function Dashboard() {
-    const queryClient = useQueryClient();
     const [isEditingPrice, setIsEditingPrice] = useState(false);
     const [newPrice, setNewPrice] = useState('');
+    const queryClient = useQueryClient();
 
-    const { data: currentPrice, isLoading: isLoadingPrice } = useQuery({
-        queryKey: ['currentUnitPrice'],
+    const { data: investors } = useQuery({
+        queryKey: ['investors'],
+        queryFn: getInvestors,
+    });
+
+    const { data: currentPrice } = useQuery({
+        queryKey: ['currentPrice'],
         queryFn: getCurrentUnitPrice,
     });
 
-    const { data: investors, isLoading: isLoadingInvestors } = useQuery({
-        queryKey: ['investors'],
-        queryFn: getInvestors,
+    const { data: totalPayouts } = useQuery({
+        queryKey: ['totalPayouts'],
+        queryFn: getAllPayouts,
+    });
+
+    const { data: totalCapitalReturned } = useQuery({
+        queryKey: ['totalCapitalReturned'],
+        queryFn: getTotalCapitalReturned,
     });
 
     const updatePriceMutation = useMutation({
         mutationFn: updateUnitPrice,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['currentUnitPrice'] });
+            queryClient.invalidateQueries({ queryKey: ['currentPrice'] });
             setIsEditingPrice(false);
-            setNewPrice('');
         },
     });
 
-    const handleUpdatePrice = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newPrice) return;
-        updatePriceMutation.mutate(parseFloat(newPrice));
+    const handleUpdatePrice = () => {
+        if (newPrice) {
+            updatePriceMutation.mutate(Number(newPrice));
+        }
     };
 
-    const totalCapital = investors?.reduce((sum, inv) => sum + inv.total_invested_capital, 0) || 0;
-
-    if (isLoadingPrice || isLoadingInvestors) {
-        return <div className="text-center py-10">جاري التحميل...</div>;
-    }
+    const totalInvestedCapital = investors?.reduce(
+        (sum, inv) => sum + Number(inv.total_invested_capital),
+        0
+    ) || 0;
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+            <h1 className="text-3xl font-bold text-gray-900">لوحة التحكم</h1>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Current Unit Price Card */}
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <DollarSign className="h-6 w-6 text-gray-400" />
-                            </div>
-                            <div className="mr-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">سعر الوحدة الحالي</dt>
-                                    <dd>
-                                        <div className="text-lg font-medium text-gray-900">
-                                            {currentPrice?.toLocaleString()} دينار
-                                        </div>
-                                    </dd>
-                                </dl>
-                            </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="bg-blue-100 p-3 rounded-lg">
+                            <TrendingUp className="w-6 h-6 text-blue-600" />
                         </div>
-                    </div>
-                    <div className="bg-gray-50 px-5 py-3">
-                        {isEditingPrice ? (
-                            <form onSubmit={handleUpdatePrice} className="flex gap-2">
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={newPrice}
-                                    onChange={(e) => setNewPrice(e.target.value)}
-                                    placeholder="السعر الجديد"
-                                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm p-2 border"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={updatePriceMutation.isPending}
-                                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
-                                >
-                                    حفظ
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsEditingPrice(false)}
-                                    className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
-                                >
-                                    إلغاء
-                                </button>
-                            </form>
+                        {!isEditingPrice ? (
+                            <button
+                                onClick={() => {
+                                    setNewPrice(currentPrice?.toString() || '');
+                                    setIsEditingPrice(true);
+                                }}
+                                className="text-gray-400 hover:text-blue-600 transition-colors"
+                            >
+                                <Edit2 className="w-5 h-5" />
+                            </button>
                         ) : (
-                            <div className="text-sm">
+                            <div className="flex gap-2">
                                 <button
-                                    onClick={() => setIsEditingPrice(true)}
-                                    className="font-medium text-emerald-600 hover:text-emerald-500"
+                                    onClick={handleUpdatePrice}
+                                    className="text-emerald-600 hover:bg-emerald-50 p-1 rounded"
                                 >
-                                    تحديث السعر
+                                    <Check className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => setIsEditingPrice(false)}
+                                    className="text-red-600 hover:bg-red-50 p-1 rounded"
+                                >
+                                    <X className="w-5 h-5" />
                                 </button>
                             </div>
                         )}
                     </div>
+                    <h3 className="text-gray-500 text-sm font-medium mb-1">سعر الوحدة الحالي</h3>
+                    {isEditingPrice ? (
+                        <input
+                            type="number"
+                            value={newPrice}
+                            onChange={(e) => setNewPrice(e.target.value)}
+                            className="w-full text-2xl font-bold border-b-2 border-blue-500 focus:outline-none"
+                            autoFocus
+                        />
+                    ) : (
+                        <p className="text-2xl font-bold text-gray-900">{currentPrice?.toLocaleString()} د.ك</p>
+                    )}
                 </div>
 
                 {/* Total Investors Card */}
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <Users className="h-6 w-6 text-gray-400" />
-                            </div>
-                            <div className="mr-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">عدد المستثمرين</dt>
-                                    <dd>
-                                        <div className="text-lg font-medium text-gray-900">{investors?.length}</div>
-                                    </dd>
-                                </dl>
-                            </div>
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="bg-emerald-100 p-3 rounded-lg">
+                            <Users className="w-6 h-6 text-emerald-600" />
                         </div>
                     </div>
+                    <h3 className="text-gray-500 text-sm font-medium mb-1">إجمالي المستثمرين</h3>
+                    <p className="text-2xl font-bold text-gray-900">{investors?.length || 0}</p>
                 </div>
 
-                {/* Total Fund Value Card */}
-                <div className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="p-5">
-                        <div className="flex items-center">
-                            <div className="flex-shrink-0">
-                                <TrendingUp className="h-6 w-6 text-gray-400" />
-                            </div>
-                            <div className="mr-5 w-0 flex-1">
-                                <dl>
-                                    <dt className="text-sm font-medium text-gray-500 truncate">إجمالي رأس المال المستثمر</dt>
-                                    <dd>
-                                        <div className="text-lg font-medium text-gray-900">
-                                            {totalCapital.toLocaleString()} دينار
-                                        </div>
-                                    </dd>
-                                </dl>
-                            </div>
+                {/* Total Invested Capital Card */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="bg-purple-100 p-3 rounded-lg">
+                            <Coins className="w-6 h-6 text-purple-600" />
                         </div>
                     </div>
+                    <h3 className="text-gray-500 text-sm font-medium mb-1">إجمالي رأس المال المستثمر</h3>
+                    <p className="text-2xl font-bold text-gray-900">{totalInvestedCapital.toLocaleString()} د.ك</p>
                 </div>
+
+                {/* Total Distributed Profits Card */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="bg-amber-100 p-3 rounded-lg">
+                            <Banknote className="w-6 h-6 text-amber-600" />
+                        </div>
+                    </div>
+                    <h3 className="text-gray-500 text-sm font-medium mb-1">إجمالي الأرباح الموزعة</h3>
+                    <p className="text-2xl font-bold text-gray-900">{totalPayouts?.toLocaleString() || 0} د.ك</p>
+                </div>
+
+                {/* Total Capital Returned Card */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="bg-indigo-100 p-3 rounded-lg">
+                            <ArrowUpRight className="w-6 h-6 text-indigo-600" />
+                        </div>
+                    </div>
+                    <h3 className="text-gray-500 text-sm font-medium mb-1">إجمالي المبالغ المستردة</h3>
+                    <p className="text-2xl font-bold text-gray-900">{totalCapitalReturned?.toLocaleString() || 0} د.ك</p>
+                    <p className="text-xs text-gray-400 mt-1">(شامل التسييل والأرباح)</p>
+                </div>
+
             </div>
         </div>
     );

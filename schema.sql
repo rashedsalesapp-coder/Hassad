@@ -17,27 +17,38 @@ on conflict (key) do nothing;
 create table public.investors (
   id uuid primary key default uuid_generate_v4(),
   name text not null,
+  phone text,
+  email text,
+  national_id text,
+  notes1 text,
+  notes2 text,
+  notes3 text,
   joined_at timestamp with time zone default timezone('utc'::text, now()) not null,
   total_units numeric default 0,
   total_invested_capital numeric default 0
 );
 
 -- Transactions Table
-create type transaction_type as enum ('BUY', 'SELL');
+-- Note: If 'transaction_type' already exists, you need to alter it.
+do $$ begin
+    create type transaction_type as enum ('BUY', 'SELL', 'PAYOUT');
+exception
+    when duplicate_object then null;
+end $$;
 
 create table public.transactions (
   id uuid primary key default uuid_generate_v4(),
   investor_id uuid references public.investors(id) on delete cascade not null,
   type transaction_type not null,
-  units numeric not null,
-  price_per_unit numeric not null,
+  units numeric, -- Nullable for PAYOUT
+  price_per_unit numeric, -- Nullable for PAYOUT
   total_amount numeric not null,
   wac_at_time numeric, -- Snapshot of WAC for SELL transactions
   realized_profit numeric, -- For SELL transactions
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable Row Level Security (RLS) - Optional for now but good practice
+-- Enable Row Level Security (RLS)
 alter table public.settings enable row level security;
 alter table public.investors enable row level security;
 alter table public.transactions enable row level security;
