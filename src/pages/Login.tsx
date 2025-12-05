@@ -43,8 +43,9 @@ export function Login() {
                     <div className="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Lock className="w-8 h-8 text-emerald-600" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">تسجيل الدخول</h1>
-                    <p className="text-gray-500 mt-2">مرحباً بك في نظام حصاد</p>
+                    <h1 className="text-3xl font-bold text-emerald-600">حصاد</h1>
+                    <p className="text-sm text-gray-400 mt-1">مجموعه احمد الراشد</p>
+                    <p className="text-gray-500 mt-3">مرحباً بك في نظام حصاد</p>
                 </div>
 
                 {error && (
